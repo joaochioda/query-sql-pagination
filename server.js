@@ -15,13 +15,13 @@ app.use(express.json());
 
 const pool = new pg.Pool(config);
 
-app.get("/", (req, res) => {
-  const pageSize = 3;
-  const params = req.query.page - 1;
-  pool.connect(function (err, client, done) {
-    if (err) {
-      console.log("Can not connect to the DB" + err);
-    }
+pool.connect(function (err, client, done) {
+  if (err) {
+    console.log("Can not connect to the DB" + err);
+  }
+  app.get("/", (req, res) => {
+    const pageSize = 3;
+    const params = req.query.page - 1;
     client.query(
       `SELECT * FROM users order by age limit ${pageSize} offset ${
         pageSize * params
@@ -35,6 +35,16 @@ app.get("/", (req, res) => {
         res.status(200).send(result.rows);
       }
     );
+  });
+  app.get("/users", (req, res) => {
+    client.query("SELECT * FROM users", function (err, result) {
+      done();
+      if (err) {
+        console.log(err);
+        res.status(400).send(err);
+      }
+      res.status(200).send(result.rows);
+    });
   });
 });
 
